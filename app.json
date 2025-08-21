@@ -1,0 +1,21 @@
+{
+  "name": "nexty-whatsapp-bot",
+  "description": "Stylish WhatsApp Bot by NEXTY with menu + automatic voice",
+  "repository": "https://github.com/nextyall/NEXTY1",
+  "stack": "heroku-22",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "SESSION_DATA": {
+      "description": "Your WhatsApp session JSON. Generate it from FLEX AI session pair.",
+      "required": true
+    },
+    "PORT": {
+      "description": "Port for the app",
+      "value": "43440"
+    }
+  }
+}
