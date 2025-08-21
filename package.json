@@ -1,0 +1,19 @@
+{
+  "name": "nexty-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "Stylish WhatsApp Bot by NEXTY",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^2.6.1",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.7.2",
+    "dotenv": "^16.3.1"
+  }
+}
