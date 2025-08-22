@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Get session ID from Heroku Config Vars
+// SESSION_ID from Heroku Config Vars
 const SESSION_ID = process.env.SESSION_ID;
 
 if (!SESSION_ID) {
@@ -19,6 +19,7 @@ const client = new Client({
     authStrategy: new LocalAuth({ clientId: SESSION_ID }),
     puppeteer: {
         headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
