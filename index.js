@@ -1,19 +1,42 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, RemoteAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Session ID from Heroku Config Vars
-const SESSION_ID = process.env.SESSION_ID || 'default-session';
+// Session stored in Heroku Config Vars as base64
+const SESSION_VAR = process.env.SESSION_DATA || null;
 
-console.log('🚀 Starting WhatsApp Bot on 2X Plan...');
-console.log('💪 2X CPU - 1GB RAM - No Sleep');
-console.log('📱 Session ID:', SESSION_ID);
+console.log('🚀 Starting WhatsApp Bot on Heroku 2X Plan...');
+
+let sessionData = null;
+if (SESSION_VAR) {
+    try {
+        sessionData = JSON.parse(Buffer.from(SESSION_VAR, 'base64').toString('utf-8'));
+        console.log('💾 Session loaded from environment variable');
+    } catch (err) {
+        console.error('❌ Failed to parse session data:', err.message);
+    }
+}
 
 const client = new Client({
-    authStrategy: new LocalAuth({
-        clientId: SESSION_ID
+    authStrategy: new RemoteAuth({
+        clientId: 'heroku-bot',
+        session: sessionData,
+        store: {
+            async save(session) {
+                // Encode session to base64 and log instructions for Heroku config
+                const encoded = Buffer.from(JSON.stringify(session)).toString('base64');
+                console.log('💾 Save this to Heroku Config Var SESSION_DATA:\n', encoded);
+            },
+            async get() {
+                return sessionData;
+            },
+            async delete() {
+                console.log('🗑 Session deleted');
+            }
+        }
     }),
     puppeteer: {
         headless: true,
@@ -29,28 +52,24 @@ const client = new Client({
             '--memory-pressure-level=high'
         ]
     },
-    // 2X Plan Optimization
     takeoverOnConflict: true,
     takeoverTimeoutMs: 60000,
     restartOnAuthFail: true
 });
 
-// QR Code Generation
+// QR Code
 client.on('qr', (qr) => {
     console.log('📡 QR Code received! Scan with WhatsApp');
     qrcode.generate(qr, { small: true });
 });
 
-// Bot Ready
+// Ready
 client.on('ready', () => {
-    console.log('✅ Client is ready on 2X Plan!');
-    console.log('⚡ 2X CPU - Better Performance');
-    console.log('💾 1GB RAM - More Memory');
-    console.log('🌙 Never Sleeps - 24/7 Online');
+    console.log('✅ Client is ready!');
 });
 
-// Message Handling with Better Performance
-client.on('message', async message => {
+// Message Handling
+client.on('message', async (message) => {
     try {
         const content = message.body.toLowerCase();
         const sender = message.from;
@@ -59,34 +78,26 @@ client.on('message', async message => {
             const menuText = `
 ⚡ *2X POWER BOT* ⚡
 
-🤖 *BOT MENU* 🤖
-
-📋 *Commands:*
+📋 Commands:
 🎧 .menu - Show menu
-⚡ .ping - Speed test  
+⚡ .ping - Speed test
 🆔 .jid - Get chat ID
 📤 .forward <jid> - Forward message
 
-⭐ *2X Plan Features:*
+⭐ 2X Plan Features:
 • 2X CPU - Faster Speed
 • 1GB RAM - More Memory
 • Never Sleeps - 24/7 Online
-• Team Supported - Collaboration
-
-🔧 *Running on:* Heroku 2X Basic Plan
             `;
             await client.sendMessage(sender, menuText);
-        }
-        else if (content === '.ping') {
+        } else if (content === '.ping') {
             const start = Date.now();
-            const replyMsg = await message.reply('🏓 Testing 2X speed...');
+            const replyMsg = await message.reply('🏓 Testing speed...');
             const end = Date.now();
-            await replyMsg.edit(`🏓 Pong! 2X Speed: ${end - start}ms`);
-        }
-        else if (content === '.jid') {
+            await replyMsg.edit(`🏓 Pong! ${end - start}ms`);
+        } else if (content === '.jid') {
             await message.reply(`📱 Chat JID: ${sender}`);
-        }
-        else if (content.startsWith('.forward ')) {
+        } else if (content.startsWith('.forward ')) {
             const jid = content.split(' ')[1];
             if (jid) {
                 await message.forward(jid);
@@ -95,44 +106,40 @@ client.on('message', async message => {
                 await message.reply('❌ Please provide JID: .forward <jid>');
             }
         }
-    } catch (error) {
-        console.log('❌ Message handling error:', error.message);
+    } catch (err) {
+        console.error('❌ Message error:', err.message);
     }
 });
 
-// Initialize client with error handling
-client.initialize().catch(error => {
-    console.log('❌ Client initialization failed:', error.message);
-    console.log('🔄 Restarting in 5 seconds...');
-    setTimeout(() => {
-        client.initialize();
-    }, 5000);
-});
+// Initialize client
+(async () => {
+    try {
+        await client.initialize();
+    } catch (err) {
+        console.error('❌ Client initialization failed:', err.message);
+        setTimeout(() => client.initialize(), 5000);
+    }
+})();
 
-// Enhanced keep-alive for 2X plan
+// Express routes
 app.get('/', (req, res) => {
     res.send(`
-        <h1>🤖 WhatsApp Bot Running on 2X Plan</h1>
-        <p>⚡ 2X CPU - 1GB RAM - No Sleep</p>
-        <p>📱 Session ID: ${SESSION_ID}</p>
-        <p>💪 Use .menu in WhatsApp to see features</p>
+        <h1>🤖 WhatsApp Bot Running</h1>
+        <p>📱 Session Active: ${sessionData ? 'Yes' : 'No'}</p>
+        <p>💪 2X Plan - 24/7 Online</p>
+        <p>Use .menu in WhatsApp to see commands</p>
     `);
 });
 
-// Health check endpoint
 app.get('/health', (req, res) => {
     res.json({
         status: 'active',
         plan: '2x_basic',
-        memory: '1GB',
-        cpu: '2x',
         uptime: process.uptime(),
-        session: SESSION_ID
+        session: !!sessionData
     });
 });
 
 app.listen(port, () => {
     console.log(`🌐 Server running on port ${port}`);
-    console.log(`💪 2X Basic Plan - Optimized`);
-    console.log(`📊 Health check: http://localhost:${port}/health`);
 });
