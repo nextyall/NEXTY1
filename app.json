@@ -1,24 +1,18 @@
 {
   "name": "WhatsApp 2X Bot",
-  "description": "High-performance WhatsApp bot on Heroku 2X Standard Plan",
-  "repository": "https://github.com/nextyall/NEXTY1",
+  "description": "High-performance WhatsApp bot with Heroku Deploy Button",
+  "repository": "https://github.com/YOUR_USERNAME/YOUR_REPO",
   "logo": "https://telegra.ph/file/64c4e67f38e76dcabead8.jpg",
-  "keywords": [
-    "whatsapp",
-    "bot",
-    "nodejs",
-    "heroku",
-    "2x-plan"
-  ],
+  "keywords": ["whatsapp","bot","nodejs","heroku","2x-plan"],
   "buildpacks": [
     { "url": "heroku/nodejs" },
     { "url": "https://github.com/jontewks/puppeteer-heroku-buildpack" }
   ],
   "env": {
-    "SESSION_DATA": {
-      "description": "Base64 encoded WhatsApp session data",
+    "SESSION_ID": {
+      "description": "Paste your session ID from the generator site",
       "value": "",
-      "required": false
+      "required": true
     },
     "NODE_ENV": {
       "description": "Environment type",
