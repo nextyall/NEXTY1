@@ -1,13 +1,14 @@
 {
-  "name": "WhatsApp Bot",
-  "description": "A WhatsApp bot with menu, ping, JID and message forwarding features",
+  "name": "WhatsApp 2X Bot",
+  "description": "High-performance WhatsApp bot on Heroku 2X Basic Plan",
   "repository": "https://github.com/nextyall/NEXTY1",
   "logo": "https://telegra.ph/file/64c4e67f38e76dcabead8.jpg",
   "keywords": [
     "whatsapp",
     "bot",
     "nodejs",
-    "heroku"
+    "heroku",
+    "2x-plan"
   ],
   "buildpacks": [
     {
@@ -19,7 +20,7 @@
   ],
   "env": {
     "SESSION_ID": {
-      "description": "Get Session ID from: https://flex-pairing2-4ea9250ad369.herokuapp.com/pair",
+      "description": "Get Session ID from flex-pairing",
       "value": "REPLACE_WITH_YOUR_SESSION_ID",
       "required": true
     },
@@ -32,7 +33,7 @@
   "formation": {
     "web": {
       "quantity": 1,
-      "size": "eco"
+      "size": "basic"
     }
   }
 }
