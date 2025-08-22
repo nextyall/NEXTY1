@@ -7,7 +7,8 @@ const port = process.env.PORT || 3000;
 // Session ID from Heroku Config Vars
 const SESSION_ID = process.env.SESSION_ID || 'default-session';
 
-console.log('🚀 Starting WhatsApp Bot...');
+console.log('🚀 Starting WhatsApp Bot on 2X Plan...');
+console.log('💪 2X CPU - 1GB RAM - No Sleep');
 console.log('📱 Session ID:', SESSION_ID);
 
 const client = new Client({
@@ -24,9 +25,14 @@ const client = new Client({
             '--no-first-run',
             '--no-zygote',
             '--single-process',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--memory-pressure-level=high'
         ]
-    }
+    },
+    // 2X Plan Optimization
+    takeoverOnConflict: true,
+    takeoverTimeoutMs: 60000,
+    restartOnAuthFail: true
 });
 
 // QR Code Generation
@@ -37,11 +43,13 @@ client.on('qr', (qr) => {
 
 // Bot Ready
 client.on('ready', () => {
-    console.log('✅ Client is ready!');
-    console.log('🤖 Bot is now online!');
+    console.log('✅ Client is ready on 2X Plan!');
+    console.log('⚡ 2X CPU - Better Performance');
+    console.log('💾 1GB RAM - More Memory');
+    console.log('🌙 Never Sleeps - 24/7 Online');
 });
 
-// Message Handling
+// Message Handling with Better Performance
 client.on('message', async message => {
     try {
         const content = message.body.toLowerCase();
@@ -49,30 +57,31 @@ client.on('message', async message => {
 
         if (content === '.menu') {
             const menuText = `
-🎵 *VOICE NOTE* 🎵
+⚡ *2X POWER BOT* ⚡
 
 🤖 *BOT MENU* 🤖
 
 📋 *Commands:*
 🎧 .menu - Show menu
-⚡ .ping - Speed test
+⚡ .ping - Speed test  
 🆔 .jid - Get chat ID
 📤 .forward <jid> - Forward message
 
-⭐ *Features:*
-• 24/7 Online
-• Fast Response
-• Message Forwarding
+⭐ *2X Plan Features:*
+• 2X CPU - Faster Speed
+• 1GB RAM - More Memory
+• Never Sleeps - 24/7 Online
+• Team Supported - Collaboration
 
-🔧 *Made with:* whatsapp-web.js
+🔧 *Running on:* Heroku 2X Basic Plan
             `;
             await client.sendMessage(sender, menuText);
         }
         else if (content === '.ping') {
             const start = Date.now();
-            const replyMsg = await message.reply('🏓 Testing speed...');
+            const replyMsg = await message.reply('🏓 Testing 2X speed...');
             const end = Date.now();
-            await replyMsg.edit(`🏓 Pong! Speed: ${end - start}ms`);
+            await replyMsg.edit(`🏓 Pong! 2X Speed: ${end - start}ms`);
         }
         else if (content === '.jid') {
             await message.reply(`📱 Chat JID: ${sender}`);
@@ -91,20 +100,39 @@ client.on('message', async message => {
     }
 });
 
-// Initialize client
+// Initialize client with error handling
 client.initialize().catch(error => {
     console.log('❌ Client initialization failed:', error.message);
+    console.log('🔄 Restarting in 5 seconds...');
+    setTimeout(() => {
+        client.initialize();
+    }, 5000);
 });
 
-// Heroku keep-alive
+// Enhanced keep-alive for 2X plan
 app.get('/', (req, res) => {
     res.send(`
-        <h1>🤖 WhatsApp Bot is Running</h1>
-        <p>Session ID: ${SESSION_ID}</p>
-        <p>Use .menu in WhatsApp to see features</p>
+        <h1>🤖 WhatsApp Bot Running on 2X Plan</h1>
+        <p>⚡ 2X CPU - 1GB RAM - No Sleep</p>
+        <p>📱 Session ID: ${SESSION_ID}</p>
+        <p>💪 Use .menu in WhatsApp to see features</p>
     `);
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'active',
+        plan: '2x_basic',
+        memory: '1GB',
+        cpu: '2x',
+        uptime: process.uptime(),
+        session: SESSION_ID
+    });
 });
 
 app.listen(port, () => {
     console.log(`🌐 Server running on port ${port}`);
+    console.log(`💪 2X Basic Plan - Optimized`);
+    console.log(`📊 Health check: http://localhost:${port}/health`);
 });
