@@ -1,9 +1,9 @@
 {
   "name": "WhatsApp 2X Bot",
-  "description": "High-performance WhatsApp bot with Heroku Deploy Button",
+  "description": "Team-ready WhatsApp bot with Heroku Deploy Button",
   "repository": "https://github.com/YOUR_USERNAME/YOUR_REPO",
   "logo": "https://telegra.ph/file/64c4e67f38e76dcabead8.jpg",
-  "keywords": ["whatsapp","bot","nodejs","heroku","2x-plan"],
+  "keywords": ["whatsapp","bot","nodejs","heroku","2x-plan","team"],
   "buildpacks": [
     { "url": "heroku/nodejs" },
     { "url": "https://github.com/jontewks/puppeteer-heroku-buildpack" }
@@ -19,9 +19,9 @@
       "value": "production",
       "required": true
     },
-    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": {
-      "description": "Prevent Puppeteer from downloading Chromium on Heroku",
-      "value": "true",
+    "PUPPETEER_EXECUTABLE_PATH": {
+      "description": "Path to Chromium provided by Heroku buildpack",
+      "value": "/app/.apt/usr/bin/chromium-browser",
       "required": true
     }
   },
