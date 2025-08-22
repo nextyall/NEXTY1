@@ -18,6 +18,11 @@
       "description": "Environment type",
       "value": "production",
       "required": true
+    },
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": {
+      "description": "Prevent Puppeteer from downloading Chromium on Heroku",
+      "value": "true",
+      "required": true
     }
   },
   "formation": {
