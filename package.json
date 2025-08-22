@@ -1,7 +1,7 @@
 {
-  "name": "whatsapp-bot-2x",
+  "name": "whatsapp-bot",
   "version": "1.0.0",
-  "description": "WhatsApp Bot 2X Plan - public deploy",
+  "description": "WhatsApp Bot with features",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
