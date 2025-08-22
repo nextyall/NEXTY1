@@ -1,42 +1,23 @@
-const { Client, RemoteAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
-const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Session stored in Heroku Config Vars as base64
-const SESSION_VAR = process.env.SESSION_DATA || null;
+// Get session ID from Heroku Config Vars
+const SESSION_ID = process.env.SESSION_ID;
 
-console.log('🚀 Starting WhatsApp Bot on Heroku 2X Plan...');
-
-let sessionData = null;
-if (SESSION_VAR) {
-    try {
-        sessionData = JSON.parse(Buffer.from(SESSION_VAR, 'base64').toString('utf-8'));
-        console.log('💾 Session loaded from environment variable');
-    } catch (err) {
-        console.error('❌ Failed to parse session data:', err.message);
-    }
+if (!SESSION_ID) {
+    console.error('❌ No SESSION_ID found! Paste your SESSION_ID from the generator site.');
+    process.exit(1);
 }
 
+console.log('🚀 Starting WhatsApp Bot...');
+console.log('📱 Session ID:', SESSION_ID);
+
 const client = new Client({
-    authStrategy: new RemoteAuth({
-        clientId: 'heroku-bot',
-        session: sessionData,
-        store: {
-            async save(session) {
-                // Encode session to base64 and log instructions for Heroku config
-                const encoded = Buffer.from(JSON.stringify(session)).toString('base64');
-                console.log('💾 Save this to Heroku Config Var SESSION_DATA:\n', encoded);
-            },
-            async get() {
-                return sessionData;
-            },
-            async delete() {
-                console.log('🗑 Session deleted');
-            }
-        }
+    authStrategy: new LocalAuth({
+        clientId: SESSION_ID
     }),
     puppeteer: {
         headless: true,
@@ -48,8 +29,7 @@ const client = new Client({
             '--no-first-run',
             '--no-zygote',
             '--single-process',
-            '--disable-gpu',
-            '--memory-pressure-level=high'
+            '--disable-gpu'
         ]
     },
     takeoverOnConflict: true,
@@ -57,7 +37,7 @@ const client = new Client({
     restartOnAuthFail: true
 });
 
-// QR Code
+// QR Code (first-time only)
 client.on('qr', (qr) => {
     console.log('📡 QR Code received! Scan with WhatsApp');
     qrcode.generate(qr, { small: true });
@@ -70,26 +50,19 @@ client.on('ready', () => {
 
 // Message Handling
 client.on('message', async (message) => {
+    const sender = message.from;
+    const content = message.body.toLowerCase();
+
     try {
-        const content = message.body.toLowerCase();
-        const sender = message.from;
-
         if (content === '.menu') {
-            const menuText = `
-⚡ *2X POWER BOT* ⚡
-
+            await client.sendMessage(sender, `
+⚡ *WhatsApp 2X Bot* ⚡
 📋 Commands:
-🎧 .menu - Show menu
-⚡ .ping - Speed test
-🆔 .jid - Get chat ID
-📤 .forward <jid> - Forward message
-
-⭐ 2X Plan Features:
-• 2X CPU - Faster Speed
-• 1GB RAM - More Memory
-• Never Sleeps - 24/7 Online
-            `;
-            await client.sendMessage(sender, menuText);
+.menu - Show menu
+.ping - Speed test
+.jid - Get chat ID
+.forward <jid> - Forward message
+            `);
         } else if (content === '.ping') {
             const start = Date.now();
             const replyMsg = await message.reply('🏓 Testing speed...');
@@ -112,32 +85,13 @@ client.on('message', async (message) => {
 });
 
 // Initialize client
-(async () => {
-    try {
-        await client.initialize();
-    } catch (err) {
-        console.error('❌ Client initialization failed:', err.message);
-        setTimeout(() => client.initialize(), 5000);
-    }
-})();
+client.initialize().catch(err => console.error('❌ Client init failed:', err));
 
-// Express routes
+// Express server for health check
 app.get('/', (req, res) => {
-    res.send(`
-        <h1>🤖 WhatsApp Bot Running</h1>
-        <p>📱 Session Active: ${sessionData ? 'Yes' : 'No'}</p>
-        <p>💪 2X Plan - 24/7 Online</p>
-        <p>Use .menu in WhatsApp to see commands</p>
-    `);
-});
-
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'active',
-        plan: '2x_basic',
-        uptime: process.uptime(),
-        session: !!sessionData
-    });
+    res.send(`<h1>🤖 WhatsApp Bot Running</h1>
+<p>📱 Session ID: ${SESSION_ID}</p>
+<p>Use .menu in WhatsApp to see commands</p>`);
 });
 
 app.listen(port, () => {
