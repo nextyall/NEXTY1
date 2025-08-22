@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 const SESSION_ID = process.env.SESSION_ID;
 
 if (!SESSION_ID) {
-    console.error('❌ No SESSION_ID found! Paste your SESSION_ID from the generator site.');
+    console.error('❌ No SESSION_ID found! Paste your SESSION_ID from generator site.');
     process.exit(1);
 }
 
@@ -16,9 +16,7 @@ console.log('🚀 Starting WhatsApp Bot...');
 console.log('📱 Session ID:', SESSION_ID);
 
 const client = new Client({
-    authStrategy: new LocalAuth({
-        clientId: SESSION_ID
-    }),
+    authStrategy: new LocalAuth({ clientId: SESSION_ID }),
     puppeteer: {
         headless: true,
         args: [
