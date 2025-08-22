@@ -1,34 +1,30 @@
 {
   "name": "WhatsApp 2X Bot",
-  "description": "Team-ready WhatsApp bot with Heroku Deploy Button",
-  "repository": "https://github.com/YOUR_USERNAME/YOUR_REPO",
+  "description": "Team-deploy WhatsApp bot on Heroku",
+  "repository": "https://github.com/YOUR_USERNAME/whatsapp-bot",
   "logo": "https://telegra.ph/file/64c4e67f38e76dcabead8.jpg",
-  "keywords": ["whatsapp","bot","nodejs","heroku","2x-plan","team"],
+  "keywords": ["whatsapp", "bot", "nodejs", "heroku"],
   "buildpacks": [
     { "url": "heroku/nodejs" },
     { "url": "https://github.com/jontewks/puppeteer-heroku-buildpack" }
   ],
   "env": {
     "SESSION_ID": {
-      "description": "Paste your session ID from the generator site",
-      "value": "",
+      "description": "Your WhatsApp session ID / generator URL",
+      "required": true
+    },
+    "PUPPETEER_EXECUTABLE_PATH": {
+      "description": "Path to Chromium",
+      "value": "/app/.apt/usr/bin/chromium-browser",
       "required": true
     },
     "NODE_ENV": {
       "description": "Environment type",
       "value": "production",
       "required": true
-    },
-    "PUPPETEER_EXECUTABLE_PATH": {
-      "description": "Path to Chromium provided by Heroku buildpack",
-      "value": "/app/.apt/usr/bin/chromium-browser",
-      "required": true
     }
   },
   "formation": {
-    "web": {
-      "quantity": 1,
-      "size": "standard-2x"
-    }
+    "web": { "quantity": 1, "size": "standard-1x" }
   }
 }
