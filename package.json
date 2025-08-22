@@ -4,7 +4,8 @@
   "description": "WhatsApp Bot 2X Plan - public deploy",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "postinstall": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true"
   },
   "dependencies": {
     "whatsapp-web.js": "^1.18.4",
