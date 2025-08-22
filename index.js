@@ -1,60 +1,110 @@
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-const axios = require('axios');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
-require('dotenv').config();
+// Session ID from Heroku Config Vars
+const SESSION_ID = process.env.SESSION_ID || 'default-session';
 
-const sessionData = process.env.SESSION_DATA
-  ? JSON.parse(process.env.SESSION_DATA)
-  : null;
+console.log('🚀 Starting WhatsApp Bot...');
+console.log('📱 Session ID:', SESSION_ID);
 
 const client = new Client({
-    authStrategy: sessionData ? undefined : new LocalAuth(),
-    session: sessionData || undefined
+    authStrategy: new LocalAuth({
+        clientId: SESSION_ID
+    }),
+    puppeteer: {
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+        ]
+    }
 });
 
-client.on('qr', qr => {
+// QR Code Generation
+client.on('qr', (qr) => {
+    console.log('📡 QR Code received! Scan with WhatsApp');
     qrcode.generate(qr, { small: true });
-    console.log('Scan the QR code above');
 });
 
+// Bot Ready
 client.on('ready', () => {
-    console.log('NEXTY Bot is ready!');
+    console.log('✅ Client is ready!');
+    console.log('🤖 Bot is now online!');
 });
 
-client.on('message', async msg => {
-    const chat = await msg.getChat();
+// Message Handling
+client.on('message', async message => {
+    try {
+        const content = message.body.toLowerCase();
+        const sender = message.from;
 
-    if(msg.body.toLowerCase() === '.menu') {
-        const menuText = `*NEXTY BOT MENU*\n\n.ping - Bot status\n.jid - Get your JID\n.forward - Forward a message\n.owner - Bot owner info`;
-        msg.reply(menuText);
+        if (content === '.menu') {
+            const menuText = `
+🎵 *VOICE NOTE* 🎵
 
-        const voiceUrl = 'https://files.catbox.moe/9j4qg6.mp3';
-        const response = await axios.get(voiceUrl, { responseType: 'arraybuffer' });
-        const media = new MessageMedia('audio/mpeg', Buffer.from(response.data).toString('base64'));
-        msg.reply(media);
-    }
+🤖 *BOT MENU* 🤖
 
-    if(msg.body.toLowerCase() === '.ping') {
-        msg.reply('Pong! ✅ Bot is online');
-    }
+📋 *Commands:*
+🎧 .menu - Show menu
+⚡ .ping - Speed test
+🆔 .jid - Get chat ID
+📤 .forward <jid> - Forward message
 
-    if(msg.body.toLowerCase() === '.jid') {
-        msg.reply(`Your JID: ${msg.from}`);
-    }
+⭐ *Features:*
+• 24/7 Online
+• Fast Response
+• Message Forwarding
 
-    if(msg.body.toLowerCase() === '.owner') {
-        msg.reply('Owner: FLEX AI / NEXTY Team');
-    }
-
-    if(msg.body.toLowerCase().startsWith('.forward')) {
-        if(msg.hasQuotedMsg) {
-            const quoted = await msg.getQuotedMessage();
-            chat.sendMessage(quoted.body);
-        } else {
-            msg.reply('Please reply to a message with .forward');
+🔧 *Made with:* whatsapp-web.js
+            `;
+            await client.sendMessage(sender, menuText);
         }
+        else if (content === '.ping') {
+            const start = Date.now();
+            const replyMsg = await message.reply('🏓 Testing speed...');
+            const end = Date.now();
+            await replyMsg.edit(`🏓 Pong! Speed: ${end - start}ms`);
+        }
+        else if (content === '.jid') {
+            await message.reply(`📱 Chat JID: ${sender}`);
+        }
+        else if (content.startsWith('.forward ')) {
+            const jid = content.split(' ')[1];
+            if (jid) {
+                await message.forward(jid);
+                await message.reply('✅ Message forwarded successfully!');
+            } else {
+                await message.reply('❌ Please provide JID: .forward <jid>');
+            }
+        }
+    } catch (error) {
+        console.log('❌ Message handling error:', error.message);
     }
 });
 
-client.initialize();
+// Initialize client
+client.initialize().catch(error => {
+    console.log('❌ Client initialization failed:', error.message);
+});
+
+// Heroku keep-alive
+app.get('/', (req, res) => {
+    res.send(`
+        <h1>🤖 WhatsApp Bot is Running</h1>
+        <p>Session ID: ${SESSION_ID}</p>
+        <p>Use .menu in WhatsApp to see features</p>
+    `);
+});
+
+app.listen(port, () => {
+    console.log(`🌐 Server running on port ${port}`);
+});
